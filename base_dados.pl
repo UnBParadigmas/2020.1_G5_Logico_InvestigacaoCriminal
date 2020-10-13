@@ -11,9 +11,7 @@ possivel_suspeito(mary).
 possivel_suspeito(jane).
 possivel_suspeito(george).
 
-crime(john,terca,parque, garrafa).
-crime(robin,quinta,bar, cano).
-crime(jim,quarta,bar, cano).
+crime(roubo,john,terca,parque).
 
 estava(fred,terca,parque).
 estava(mary,terca,parque).
