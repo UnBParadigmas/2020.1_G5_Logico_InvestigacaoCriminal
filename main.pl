@@ -8,13 +8,13 @@ iniciar :-
 abre_visualizacao :-
   caminho_diretorio_fatos_sobre_suspeitos(Diretorio),
   new(DirObj, directory(Diretorio)),
-  new(Frame, frame('Investigacao Criminal')),
-  send(Frame, append(new(Browser, browser))),
+  new(Window, window('Investigacao Criminal', size(800, 800))),
+  send(Window, below, new(Browser, browser('Lista', size(200, 200)))),
   send(new(Dialog, dialog), below(Browser)),
   send(Dialog, append(button('Abrir', message(@prolog, visualiza_arquivo, DirObj, Browser?selection?key)))),
-  send(Dialog, append(button('Fechar', message(Frame, destroy)))),
+  send(Dialog, append(button('Fechar', message(Window, destroy)))),
   send(Browser, members(DirObj?files)),
-  send(Frame, open).
+  send(Window, open).
 
 visualiza_arquivo(DirObj, Frame) :-
   send(new(View, view(Frame)), open),
