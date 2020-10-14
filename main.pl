@@ -35,7 +35,7 @@ interface :-
   send(RightDialogGroup,append(AddSuspectButton, next_row)), 
 
   % Criacao de botoes no dialog group inferior
-  send(ButtonsDialogGroup,append(button('Visualizar Fatos', message(@prolog, visualiza_fatos, DirObj, Browser?selection?key)))),
+  send(ButtonsDialogGroup,append(button('Visualizar Fato', message(@prolog, visualiza_fatos, DirObj, Browser?selection?key)))),
   send(ButtonsDialogGroup, append(button('Sair', message(MainDialog, destroy)))),
 
   % Preenchimento dos arquivos encontrados no Browser
@@ -44,9 +44,21 @@ interface :-
   send(MainDialog, open). 
 
 visualiza_fatos(DirObj, Frame) :-
-  send(new(View, view(Frame)), open),
+  new(Browser, browser('Fatos sobre o Suspeito', size(100, 40))),
   get(DirObj, file(Frame), FileObj),
-  send(View, load(FileObj)).
+  get(FileObj, name, FilePath),
+  ler_dados_arquivo(FilePath, Lines),
+  send(Browser, members(Lines)),
+  send(Browser, open).
+
+ler_dados_arquivo(FilePath, Lines) :-
+  open(FilePath, read, Stream),
+  ler_linhas_arquivo(Stream, Lines),
+  close(Stream).
+
+ler_linhas_arquivo(Stream, Lines) :-
+  read_string(Stream, _, Str),
+  split_string(Str, "\n", "\n", Lines).
 
 gera_fatos_sobre_suspeitos(Pessoa) :-
   possivel_suspeito(Pessoa),
