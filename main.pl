@@ -3,20 +3,47 @@
 
 iniciar :-
   gera_fatos_sobre_suspeitos(_),
-  abre_visualizacao.
+  interface.
 
-abre_visualizacao :-
+interface :-
+  % Auxiliares
   caminho_diretorio_fatos_sobre_suspeitos(Diretorio),
   new(DirObj, directory(Diretorio)),
-  new(Window, window('Investigacao Criminal', size(800, 800))),
-  send(Window, below, new(Browser, browser('Lista', size(200, 200)))),
-  send(new(Dialog, dialog), below(Browser)),
-  send(Dialog, append(button('Abrir', message(@prolog, visualiza_arquivo, DirObj, Browser?selection?key)))),
-  send(Dialog, append(button('Fechar', message(Window, destroy)))),
-  send(Browser, members(DirObj?files)),
-  send(Window, open).
 
-visualiza_arquivo(DirObj, Frame) :-
+  % Criacao dos elementos da tela
+  new(MainDialog, dialog('Investigacao Criminal', size(800, 800))),
+  new(LeftDialogGroup, dialog_group('Suspeitos', box)),
+  new(RightDialogGroup, dialog_group('Ações', box)),
+  new(ButtonsDialogGroup, dialog_group('Botões', group)),
+  new(Browser, browser('Lista', size(50, 40))),
+
+  % Posicionamento dos elementos
+  send(MainDialog, append, LeftDialogGroup),
+  send(MainDialog, append, RightDialogGroup, right),
+  send(MainDialog, append, ButtonsDialogGroup, next_row),
+  
+  send(LeftDialogGroup, append, Browser),
+  
+  % Criacao dos elementos no dialog group direito
+  new(AddFactButton, button('Adicionar Fato')),
+  new(AddSuspectButton, button('Adicionar Suspeito')),
+  get(AddFactButton, area, AreaAddFactButton),
+  send(AreaAddFactButton, size, size(125, 20)),
+  get(AddSuspectButton, area, AreaAddSuspectButton),
+  send(AreaAddSuspectButton, size, size(125, 20)),
+  send(RightDialogGroup,append(AddFactButton, next_row)),
+  send(RightDialogGroup,append(AddSuspectButton, next_row)), 
+
+  % Criacao de botoes no dialog group inferior
+  send(ButtonsDialogGroup,append(button('Visualizar Fatos', message(@prolog, visualiza_fatos, DirObj, Browser?selection?key)))),
+  send(ButtonsDialogGroup, append(button('Sair', message(MainDialog, destroy)))),
+
+  % Preenchimento dos arquivos encontrados no Browser
+  send(Browser, members(DirObj?files)),
+
+  send(MainDialog, open). 
+
+visualiza_fatos(DirObj, Frame) :-
   send(new(View, view(Frame)), open),
   get(DirObj, file(Frame), FileObj),
   send(View, load(FileObj)).
