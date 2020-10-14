@@ -13,3 +13,4 @@ tem_motivo_contra(Pessoa,Vitima):-
 
 objetos_no_lugar(Lugar) :-
   tem_objeto(Lugar, Objeto).
+
