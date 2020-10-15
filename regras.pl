@@ -9,6 +9,7 @@ principal_suspeito(desconhecido,_).
 
 tem_motivo_contra(Pessoa,Vitima) :-
   inveja(Pessoa,Vitima).
+
 tem_motivo_contra(Pessoa,Vitima) :-
   tem_dinheiro(Vitima).
 tem_motivo_contra(Pessoa,Vitima) :-
@@ -44,3 +45,7 @@ nome_local(restaurante).
 nome_local(academia).
 nome_local(bibilioteca).
 nome_local(aeroporto).
+
+% Insere a tupla X, se já não estiver lá
+adiciona_fato(X):-
+  assert(X).
