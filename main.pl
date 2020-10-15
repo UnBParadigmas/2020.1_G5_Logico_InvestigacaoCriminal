@@ -26,7 +26,7 @@ interface :-
   
   % Criacao dos elementos no dialog group direito
   new(AddSuspectButton, button('Adicionar Suspeito', message(@prolog, adiciona_suspeito_form))),
-  new(AddFactButton, button('Adicionar Fato')),
+  new(AddFactButton, button('Adicionar Fato', message(@prolog, adiciona_fato_form))),
   get(AddFactButton, area, AreaAddFactButton),
   send(AreaAddFactButton, size, size(125, 20)),
   get(AddSuspectButton, area, AreaAddSuspectButton),
@@ -65,6 +65,24 @@ adiciona_suspeito_form :-
         message(FormDialog, destroy)))),
 
   send(FormDialog, open).
+
+adiciona_fato_form :-
+  new(FormDialog, dialog('Adicionar Fato', size(800, 800))),
+  new(DialogGroup, dialog_group(' ')),
+  send(FormDialog, append, DialogGroup),
+
+  send(DialogGroup, append, new(TipoFatoMenu, menu('Tipo:', cycle))),
+  send(TipoFatoMenu, append,
+    new(LocalItem, menu_item('estava no local...', message(@prolog, writeln, 'estava no local')))),
+  send(TipoFatoMenu, append,
+    new(InvejaItem, menu_item('inveja', message(@prolog, writeln, 'inveja')))),
+
+  send(DialogGroup, append, button('Cancelar', message(FormDialog, destroy))),
+
+  send(FormDialog, open).
+
+local_input(DialogGroup) :-
+  send(DialogGroup, append, new(Input, text_item('estava em:')), next_row).
 
 cria_suspeito(Name) :-
   write(Name), nl.
