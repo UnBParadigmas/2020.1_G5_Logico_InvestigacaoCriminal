@@ -46,6 +46,13 @@ nome_local(academia).
 nome_local(bibilioteca).
 nome_local(aeroporto).
 
+% Remove a tupla X
+remove_fato(X) :- remove_fato1(X), fail.
+remove_fato(_).
+
+remove_fato1(X) :- retract(X).
+remove_fato1(_).
+
 % Insere a tupla X, se já não estiver lá
 adiciona_fato(X):-
-  assert(X).
+  remove_fato(X), assert(X).

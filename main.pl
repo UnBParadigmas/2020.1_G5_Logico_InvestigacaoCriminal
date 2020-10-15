@@ -13,30 +13,34 @@ interface :-
   % Criacao dos elementos da tela
   new(MainDialog, dialog('Investigacao Criminal', size(800, 800))),
   new(LeftDialogGroup, dialog_group('Suspeitos', box)),
-  new(RightDialogGroup, dialog_group('Ações', box)),
+  new(ReportsDialogGroup, dialog_group('Relatos', box)),
   new(ButtonsDialogGroup, dialog_group('Botões', group)),
   new(Browser, browser('Lista', size(50, 40))),
 
   % Posicionamento dos elementos
   send(MainDialog, append, LeftDialogGroup),
-  send(MainDialog, append, RightDialogGroup, right),
+  send(MainDialog, append, ReportsDialogGroup, right),
   send(MainDialog, append, ButtonsDialogGroup, next_row),
+  
   
   send(LeftDialogGroup, append, Browser),
   
-  % Criacao dos elementos no dialog group direito
-  new(AddSuspectButton, button('Adicionar Suspeito', message(@prolog, adiciona_suspeito, Browser, DirObj))),
-  new(AddFactButton, button('Adicionar Fato', message(@prolog, adiciona_fato_form))),
-  get(AddFactButton, area, AreaAddFactButton),
-  send(AreaAddFactButton, size, size(125, 20)),
-  get(AddSuspectButton, area, AreaAddSuspectButton),
-  send(AreaAddSuspectButton, size, size(125, 20)),
-  send(RightDialogGroup,append(AddSuspectButton, next_row)), 
-  send(RightDialogGroup,append(AddFactButton, next_row)),
+  % Elementos dialog group de relatos
+  new(AddLocalButton, button('Local', message(@prolog, local_form))),
+  get(AddLocalButton, area, AreaAddLocalButton),
+  send(AreaAddLocalButton, size, size(125, 20)),
+
+  new(AddEnvyButton, button('Inveja', message(@prolog, envy_form))),
+  get(AddEnvyButton, area, AreaAddEnvyButton),
+  send(AreaAddEnvyButton, size, size(125, 20)),
+  
+  send(ReportsDialogGroup,append(AddLocalButton, next_row)),
+  send(ReportsDialogGroup,append(AddEnvyButton, next_row)),
 
   % Criacao de botoes no dialog group inferior
-  send(ButtonsDialogGroup,append(button('Visualizar Fato', message(@prolog, visualiza_fatos, DirObj, Browser?selection?key)))),
-  send(ButtonsDialogGroup, append(button('Sair', message(MainDialog, destroy)))),
+  send(ButtonsDialogGroup,append(button('Abrir Relatorio do Suspeito', message(@prolog, visualiza_fatos, DirObj, Browser?selection?key)))),
+  send(ButtonsDialogGroup,append(button('Adicionar Suspeito', message(@prolog, adiciona_suspeito, Browser, DirObj)))),
+  send(ButtonsDialogGroup,append(button('Sair', message(MainDialog, destroy)))),
 
   % Preenchimento dos arquivos encontrados no Browser
   send(Browser, members(DirObj?files)),
@@ -72,18 +76,55 @@ adiciona_suspeito_form(Name) :-
   Answer \== @nil,
   Name = Answer.
 
-adiciona_fato_form :-
-  new(FormDialog, dialog('Adicionar Fato', size(800, 800))),
-  new(DialogGroup, dialog_group(' ')),
-  send(FormDialog, append, DialogGroup),
+local_form :-
+  new(FormDialog, dialog('Local', size(800, 800))),
 
-  send(DialogGroup, append, new(TipoFatoMenu, menu('Tipo:', cycle))),
-  send(TipoFatoMenu, append, menu_item('estava no local...', message(@prolog, writeln, 'estava no local'))),
-  send(TipoFatoMenu, append, menu_item('inveja', message(@prolog, writeln, 'inveja'))),
+  send(FormDialog, append, new(SuspeitoMenu, menu('Pessoa:', cycle))),
+  suspeitos_menu(SuspeitoMenu),
 
-  send(DialogGroup, append, button('Cancelar', message(FormDialog, destroy))),
+  send(FormDialog, append, new(DiaMenu, menu('Dia:'))),
+  send(DiaMenu, append, menu_item('segunda')),
+  send(DiaMenu, append, menu_item('terca')),
+  send(DiaMenu, append, menu_item('quarta')),
+  send(DiaMenu, append, menu_item('quinta')),
+  send(DiaMenu, append, menu_item('sexta')),
+  send(DiaMenu, append, menu_item('sabado')),
+  send(DiaMenu, append, menu_item('domingo')),
+
+  send(FormDialog, append, new(LugarText, text_item('Lugar:'))),
+
+  send(FormDialog, append, button(ok,
+    and(message(@prolog,  add_local, SuspeitoMenu?selection, DiaMenu?selection, LugarText?selection),
+        message(FormDialog, destroy)))),
+  send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
 
   send(FormDialog, open).
+
+envy_form :-
+  new(FormDialog, dialog('Local', size(800, 800))),
+
+  send(FormDialog, append, new(SuspeitoMenu, menu('Pessoa:', cycle))),
+  suspeitos_menu(SuspeitoMenu),
+
+  send(FormDialog, append, button(ok,
+    and(message(@prolog,  add_envy, SuspeitoMenu?selection, SuspeitoMenu?selection),
+        message(FormDialog, destroy)))),
+  send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
+
+  send(FormDialog, open).
+
+suspeitos_menu(SuspeitoMenu) :-
+  possivel_suspeito(Pessoa),
+  send(SuspeitoMenu, append, menu_item(Pessoa)), fail.
+suspeitos_menu(_).
+
+add_local(Pessoa, Dia, Lugar) :-
+  adiciona_fato(estava(Pessoa, Dia, Lugar)),
+  gera_fatos_sobre_suspeitos(_).
+
+add_envy(Suspeito, Vitima) :-
+  adiciona_fato(inveja(Suspeito, john)),
+  gera_fatos_sobre_suspeitos(_).
 
 % Regras Auxiliares
 ler_dados_arquivo(FilePath, Lines) :-
@@ -115,8 +156,9 @@ transcricao_motivos_contra_vitima(_,_,_).
 transcricao_local_dia_crime(SaidaArquivo, Pessoa, Dia, Crime) :-
   estava(Pessoa,Dia,Lugar),
   format(SaidaArquivo,
-    '~w estava em ~w no dia em que ocorreu o(a) ~w\n',
-    [Pessoa, Lugar, Crime]).
+    '~w esteve em ~w no dia em que ocorreu o(a) ~w\n',
+    [Pessoa, Lugar, Crime]), fail.
+transcricao_local_dia_crime(_, _, _, _).
 
 abre_arquivo_fatos_sobre_suspeitos(Pessoa, Diretorio, Out) :-
   string_concat(Diretorio, Pessoa, CaminhoArquivo),
