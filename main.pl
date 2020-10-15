@@ -25,14 +25,14 @@ interface :-
   send(LeftDialogGroup, append, Browser),
   
   % Criacao dos elementos no dialog group direito
+  new(AddSuspectButton, button('Adicionar Suspeito', message(@prolog, adiciona_suspeito_form))),
   new(AddFactButton, button('Adicionar Fato')),
-  new(AddSuspectButton, button('Adicionar Suspeito')),
   get(AddFactButton, area, AreaAddFactButton),
   send(AreaAddFactButton, size, size(125, 20)),
   get(AddSuspectButton, area, AreaAddSuspectButton),
   send(AreaAddSuspectButton, size, size(125, 20)),
-  send(RightDialogGroup,append(AddFactButton, next_row)),
   send(RightDialogGroup,append(AddSuspectButton, next_row)), 
+  send(RightDialogGroup,append(AddFactButton, next_row)),
 
   % Criacao de botoes no dialog group inferior
   send(ButtonsDialogGroup,append(button('Visualizar Fato', message(@prolog, visualiza_fatos, DirObj, Browser?selection?key)))),
@@ -41,7 +41,7 @@ interface :-
   % Preenchimento dos arquivos encontrados no Browser
   send(Browser, members(DirObj?files)),
 
-  send(MainDialog, open). 
+  send(MainDialog, open).
 
 visualiza_fatos(DirObj, Frame) :-
   new(Browser, browser('Fatos sobre o Suspeito', size(100, 40))),
@@ -51,6 +51,25 @@ visualiza_fatos(DirObj, Frame) :-
   send(Browser, members(Lines)),
   send(Browser, open).
 
+adiciona_suspeito_form :-
+  new(FormDialog, dialog('Adicionar Suspeito', size(800, 800))),
+  new(DialogGroup, dialog_group(' ')),
+  send(FormDialog, append, DialogGroup),
+
+  new(SuspectName, text_item('Nome do Suspeito:')),
+  send(DialogGroup, append, SuspectName),
+
+  send(DialogGroup, append, button('Cancelar', message(FormDialog, destroy))),
+  send(DialogGroup, append, button('Salvar',
+    and(message(@prolog, cria_suspeito, SuspectName?selection),
+        message(FormDialog, destroy)))),
+
+  send(FormDialog, open).
+
+cria_suspeito(Name) :-
+  write(Name), nl.
+
+% Regras Auxiliares
 ler_dados_arquivo(FilePath, Lines) :-
   open(FilePath, read, Stream),
   ler_linhas_arquivo(Stream, Lines),
@@ -71,18 +90,14 @@ gera_fatos_sobre_suspeitos(_).
 
 transcricao_motivos_contra_vitima(SaidaArquivo, Pessoa, Vitima) :-
   inveja(Pessoa,Vitima),
-  write(SaidaArquivo, Pessoa),
-  write(SaidaArquivo, ' tem inveja de '),
-  writeln(SaidaArquivo, Vitima),fail.
+  format(SaidaArquivo, '~w tem inveja de ~w\n', [Pessoa, Vitima]), fail.
 transcricao_motivos_contra_vitima(_,_,_).
 
 transcricao_local_dia_crime(SaidaArquivo, Pessoa, Dia, Crime) :-
   estava(Pessoa,Dia,Lugar),
-  write(SaidaArquivo, Pessoa),
-  write(SaidaArquivo, ' estava em '),
-  write(SaidaArquivo, Lugar),
-  write(SaidaArquivo, ' no dia em que ocorreu o(a) '),
-  writeln(SaidaArquivo, Crime).
+  format(SaidaArquivo,
+    '~w estava em ~w no dia em que ocorreu o(a) ~w\n',
+    [Pessoa, Lugar, Crime]).
 
 abre_arquivo_fatos_sobre_suspeitos(Pessoa, Out) :-
   caminho_diretorio_fatos_sobre_suspeitos(Diretorio),
