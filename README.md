@@ -17,7 +17,7 @@ O projeto consiste em um sistema simples de avaliação de fatos e relatos para 
 
 O sistema se baseia em regras bem simples definidas no código e que podem não representar verdadeiramente um comportamento no mundo real. As regras estão definidas nos arquivos 'regras.pl' e os fatos no arquivo 'base_dados.pl' que podem ser alterados para se realizar uma avaliação mais precisa.
 
-## Screenshots
+## Detalhes do Projeto
 
 ### Dialogo de informações do crime
 
@@ -29,20 +29,21 @@ O sistema se baseia em regras bem simples definidas no código e que podem não 
 
 ### Menu lateral
 
-* Informações sobre o crime atual sendo avaliado, formulários para relatar sobre algum suspeito e o resultado atual
+* Informações sobre o crime atual sendo avaliado, formulários para relatar sobre algum suspeito e o resultado atual.
 
 ![prompt_crime](assets/menu_lateral.png)
 
 ### Formulários
 
-* Os formulários servem para adicionar relatos sobre os suspeitos
+* Os formulários servem para adicionar relatos sobre os suspeitos.
 
 ![prompt_crime](assets/input_local.png)
 
 ### Relatório baseado em relatos
 
-* Pode ser acessado quando se seleciona em um __suspeito__ na lista e clica no botão inferior __Abrir Relatorio do Suspeito__
-* Nele são apenas listados os relatos que tem alguma ligação com o crime, por exemplo: Crime ocorreu no Sábado no Hotel, se alguém relatar que um suspeito foi visto na Segunda no Parque, esse relato não será considerado
+* Pode ser acessado quando se seleciona em um __suspeito__ na lista e clica no botão inferior __Abrir Relatorio do Suspeito__.
+* Nele são apenas listados os relatos que tem alguma ligação com o crime, por exemplo: Crime ocorreu no Sábado no Hotel, se alguém relatar que um suspeito foi visto na Segunda no Parque, esse relato não será considerado.
+* Esses relatórios são mantidos em arquivos em pasta que é criada com o nome de __suspeitos__, quando o swipl é reiniciado e reabre o programa, os arquivos antigos são deletados e preenchidos com novos dados.
 
 ![prompt_crime](assets/tela_relatorio.png)
 
@@ -64,7 +65,7 @@ Abra o terminal ou seu equivalente em seu sistema operacional e digite os seguin
 
 ## Avisos
 
-O programa pode não funcionar corretamente algumas vezes devido a erros desconhecidos da plataforma XPCE, nesses casos deve-se fechar o swi-prolog e abrir novamente
+* O programa pode não funcionar corretamente algumas vezes devido a erros desconhecidos da plataforma XPCE, nesses casos deve-se fechar o swi-prolog e abrir novamente.
 
 ## Vídeo
 
