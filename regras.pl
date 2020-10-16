@@ -1,50 +1,27 @@
 :- [base_dados].
 
-principal_suspeito(Pessoa, Crime) :-  crime(Vitima,Dia,Lugar, Objeto),
+principal_suspeito(Pessoa, Crime) :-
   possivel_suspeito(Pessoa),
-  frequenta(Pessoa, Lugar),
+  crime(Crime,Vitima,Dia, Lugar),
+  % frequenta(Pessoa, Lugar),
   estava(Pessoa,Dia,Lugar),
-  tem_motivo_contra(Pessoa,Vitima).
+  tem_motivo_contra(Pessoa,Vitima, _).
 principal_suspeito(desconhecido,_).
 
-tem_motivo_contra(Pessoa,Vitima) :-
+tem_motivo_contra(Pessoa, Vitima, inveja) :-
   inveja(Pessoa,Vitima).
 
-tem_motivo_contra(Pessoa,Vitima) :-
-  tem_dinheiro(Vitima).
-tem_motivo_contra(Pessoa,Vitima) :-
-  tem_objeto_de_valor(Vitima).
-tem_motivo_contra(Pessoa,Vitima) :-
-  psicopatia(Pessoa).
-tem_motivo_contra(Pessoa,Vitima) :-
-  esta_devendo(Pessoa, Vitima).
+% tem_motivo_contra(Pessoa,Vitima) :-
+%   tem_dinheiro(Vitima).
+% tem_motivo_contra(Pessoa,Vitima) :-
+%   tem_objeto_de_valor(Vitima).
+% tem_motivo_contra(Pessoa,Vitima) :-
+%   psicopatia(Pessoa).
+% tem_motivo_contra(Pessoa,Vitima) :-
+%   esta_devendo(Pessoa, Vitima).
 
-objetos_no_lugar(Lugar) :-
-  tem_objeto(Lugar, Objeto).
-
-dia_da_semana(seg).
-dia_da_semana(ter).
-dia_da_semana(qua).
-dia_da_semana(qui).
-dia_da_semana(sex).
-dia_da_semana(sab).
-dia_da_semana(dom).
-
-tipo_crime(roubo).
-tipo_crime(furto).
-tipo_crime(agressao).
-tipo_crime(sequestro).
-tipo_crime(assasinato).
-
-nome_local(parque).
-nome_local(hotel).
-nome_local(loja).
-nome_local(bar).
-nome_local(banco).
-nome_local(restaurante).
-nome_local(academia).
-nome_local(bibilioteca).
-nome_local(aeroporto).
+% objetos_no_lugar(Lugar) :-
+%   tem_objeto(Lugar, Objeto).
 
 % Remove a tupla X
 remove_fato(X) :- remove_fato1(X), fail.

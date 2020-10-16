@@ -28,11 +28,21 @@ local(festa).
 local(faculdade).
 local(trabalho).
 
-tipo_crime(roubo).
-tipo_crime(assassinato).
-tipo_crime(transito).
+nome_local(parque).
+nome_local(hotel).
+nome_local(loja).
+nome_local(bar).
+nome_local(banco).
+nome_local(restaurante).
+nome_local(academia).
+nome_local(bibilioteca).
+nome_local(aeroporto).
 
-crime(roubo,john,terca,parque).
+tipo_crime(roubo).
+tipo_crime(furto).
+tipo_crime(agressao).
+tipo_crime(sequestro).
+tipo_crime(assassinato).
 
 estava(fred,terca,parque).
 estava(mary,terca,parque).
@@ -41,7 +51,6 @@ estava(jane,terca,bar).
 estava(george,quarta,parque).
 
 inveja(fred,john).
-inveja(mary,jim).
 
 amigos(fred, mary).
 
@@ -53,16 +62,4 @@ frequenta(mary, parque).
 frequenta(jane, bar).
 frequenta(fred, bar).
 
-remove_fato(X):-
-    remove_fato1(X), fail.
-  remove_fato(X).
-  
-remove_fato1(X):-
-    retract(X).
-remove_fato1(X).
-  
-adiciona_fato(X):-
-    remove_fato(X), assert(X).
-  
-adiciona_fato(X):-
-    assert(X).
+% crime(roubo,john,terca,parque).

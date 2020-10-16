@@ -1,7 +1,7 @@
 :- use_module(library(pce)).
 :- [regras].
 
-iniciar :-
+investigacao :-
   gera_fatos_sobre_suspeitos(_),
   prompt_informacoes_crime,
   interface.
@@ -66,6 +66,11 @@ interface :-
   % SuspeitosBrowser com os suspeitos
   send(LeftDialogGroup, append, SuspeitosBrowser),
 
+  % Informacoes do crime
+  new(CrimeDialogGroup, dialog_group('Crime', box)),
+  send(RightDialogGroup, append, CrimeDialogGroup),
+  informacoes_crime_dialog(CrimeDialogGroup),
+
   % Elementos no dialog group de acoes
   new(ActionsDialogGroup, dialog_group('Ações', box)),
   send(RightDialogGroup, append, ActionsDialogGroup),
@@ -84,17 +89,12 @@ interface :-
   get(AddLocalButton, area, AreaAddLocalButton),
   send(AreaAddLocalButton, size, size(125, 20)),
 
-  new(AddEnvyButton, button('Inveja', message(@prolog, envy_form, MainDialog))),
-  get(AddEnvyButton, area, AreaAddEnvyButton),
-  send(AreaAddEnvyButton, size, size(125, 20)),
+  new(AddMotivacaoButton, button('Possível Motivação', message(@prolog, motivacao_form, MainDialog))),
+  get(AddMotivacaoButton, area, AreaAddMotivacaoButton),
+  send(AreaAddMotivacaoButton, size, size(125, 20)),
   
   send(ReportsDialogGroup,append(AddLocalButton, next_row)),
-  send(ReportsDialogGroup,append(AddEnvyButton, next_row)),
-
-  % Informacoes do crime
-  new(CrimeDialogGroup, dialog_group('Crime', box)),
-  send(RightDialogGroup, append, CrimeDialogGroup),
-  informacoes_crime_dialog(CrimeDialogGroup),
+  send(ReportsDialogGroup,append(AddMotivacaoButton, next_row)),
 
   % dialog group de Resultados
   new(ResultsDialogGroup, dialog_group('Principais Suspeitos', box)),
@@ -200,18 +200,21 @@ local_form(MainDialog) :-
 
   send(FormDialog, open).
 
-envy_form(MainDialog) :-
+motivacao_form(MainDialog) :-
   crime(_, Vitima, _, _),
 
   new(FormDialog, dialog('Local', size(800, 800))),
-  string_concat('Tem inveja do(a) ', Vitima, Titulo),
+  string_concat('Tem motivo contra ', Vitima, Titulo),
   send(FormDialog, append, text(Titulo)),
 
   send(FormDialog, append, new(SuspeitoMenu, menu('Suspeito:', cycle))),
   suspeitos_menu(SuspeitoMenu),
 
+  send(FormDialog, append, new(MotivoMenu, menu('Motivação:', cycle))),
+  motivacoes_menu(MotivoMenu),
+
   send(FormDialog, append, button(ok,
-    and(message(@prolog,  add_envy, MainDialog, SuspeitoMenu?selection, Vitima),
+    and(message(@prolog,  add_motivacao, MainDialog, SuspeitoMenu?selection, Vitima, inveja),
         message(FormDialog, destroy)))),
   send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
 
@@ -221,6 +224,11 @@ suspeitos_menu(SuspeitoMenu) :-
   possivel_suspeito(Pessoa),
   send(SuspeitoMenu, append, menu_item(Pessoa)), fail.
 suspeitos_menu(_).
+
+motivacoes_menu(MotivoMenu) :-
+  tem_motivo_contra(_, _, Motivo),
+  send(MotivoMenu, append, menu_item(Motivo)), fail.
+motivacoes_menu(_).
 
 tipos_crimes_menu(CrimeMenu) :-
   tipo_crime(Crime),
@@ -242,7 +250,7 @@ add_local(MainDialog, Pessoa, Dia, Lugar) :-
   gera_fatos_sobre_suspeitos(_),
   atualiza_resultado_suspeitos_menu(MainDialog).
 
-add_envy(MainDialog, Suspeito, Vitima) :-
+add_motivacao(MainDialog, Suspeito, Vitima, inveja) :-
   adiciona_fato(inveja(Suspeito, Vitima)),
   gera_fatos_sobre_suspeitos(_),
   atualiza_resultado_suspeitos_menu(MainDialog).
