@@ -1,18 +1,19 @@
 :- dynamic possivel_suspeito/1.
-:- dynamic crime/5.
+:- dynamic crime/4.
 :- dynamic estava/3.
 :- dynamic inveja/2.
 :- dynamic tem_objeto/2.
 :- dynamic frequenta/2.
+:- dynamic tipo_crime/1.
 
 possivel_suspeito(fred).
 possivel_suspeito(mary).
 possivel_suspeito(jane).
 possivel_suspeito(george).
 
-crime(roubo,john,terca,parque, garrafa).
-crime(roubo,robin,quinta,bar, cano).
-crime(assalto,jim,quarta,bar, cano).
+crime(john,terca,parque, garrafa).
+crime(robin,quinta,bar, cano).
+crime(jim,quarta,bar, cano).
 
 estava(fred,terca,parque).
 estava(mary,terca,parque).
