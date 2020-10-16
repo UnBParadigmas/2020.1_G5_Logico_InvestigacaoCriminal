@@ -17,7 +17,7 @@ dia(quarta).
 dia(quinta).
 dia(sexta).
 dia(sabado).
-dia(doming).
+dia(domingo).
 
 tipo_crime(roubo).
 tipo_crime(furto).
