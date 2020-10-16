@@ -13,7 +13,7 @@
 
 ## Sobre
 
-Descreva o seu projeto em linhas gerais.
+Trata-se de um jogo de detetive simples utilizando a interface gráfica XPCE em Prolog.
 
 ## Screenshots
 
@@ -23,13 +23,13 @@ Adicione 2 ou mais screenshots do projeto em termos de interface e/ou funcioname
 
 **Linguagens**: Prolog  
 **Tecnologias**: XPCE  
-Descreva os pré-requisitos para rodar o seu projeto e os comandos necessários.
-Insira um manual ou um script para auxiliar ainda mais.
 
 ## Uso
-
-Explique como usar seu projeto, caso haja algum passo a passo após o comando de execução.
-
+Para rodar o projeto, certifique-se que esteja com a versão mais recente de SWI-Prolog instalado.
+~~~
+cd 2020.1_G5_Logico_InvestigacaoCriminal
+swipl main.pl 
+~~~
 ## Vídeo
 
 Adicione 1 ou mais vídeos com a execução do projeto.
