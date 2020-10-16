@@ -11,6 +11,27 @@ possivel_suspeito(mary).
 possivel_suspeito(jane).
 possivel_suspeito(george).
 
+dia(segunda).
+dia(terca).
+dia(quarta).
+dia(quinta).
+dia(sexta).
+dia(sabado).
+dia(doming).
+
+local(parque).
+local(bar).
+local(hotel).
+local(cinema).
+local(aeroporto).
+local(festa).
+local(faculdade).
+local(trabalho).
+
+tipo_crime(roubo).
+tipo_crime(assassinato).
+tipo_crime(transito).
+
 crime(roubo,john,terca,parque).
 
 estava(fred,terca,parque).

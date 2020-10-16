@@ -3,7 +3,48 @@
 
 iniciar :-
   gera_fatos_sobre_suspeitos(_),
+  prompt_informacoes_crime,
   interface.
+
+prompt_informacoes_crime :-
+  not(crime(_, _, _, _)), % Somente pede as informacoes se nao houver crime cadastrado
+
+  new(MainDialog, dialog('Investigacao Criminal')),
+  send(MainDialog, append, text('Forneça as informações sobre o crime:')),
+
+  send(MainDialog, append,
+      new(TipoCrimeMenu, menu('Tipo de crime', cycle))),
+  tipos_crimes_menu(TipoCrimeMenu),
+
+  send(MainDialog, append,
+      new(VitimaText, text_item('Vitima', ''))),
+      
+  send(MainDialog, append,
+      new(DiaSemanaMenu, menu('Dia', cycle))),
+  dias_semana_menu(DiaSemanaMenu),
+
+  send(MainDialog, append,
+    new(LocalMenu, menu('Local', cycle))),
+  locais_menu(LocalMenu),
+
+  send(MainDialog, append,
+       button(ok, message(MainDialog, return, ok))),
+  send(MainDialog, append,
+       button(cancel, message(MainDialog, destroy))),
+
+  % Procedimento de confirmacao dos dados
+  send(MainDialog, default_button, ok),
+  get(MainDialog, confirm, _),
+  get(TipoCrimeMenu, selection, TipoCrime),
+  get(VitimaText, selection, Vitima),
+  get(DiaSemanaMenu, selection, DiaSemana),
+  get(LocalMenu, selection, Local),
+  novo_crime(TipoCrime, Vitima, DiaSemana, Local),
+  send(MainDialog, destroy).
+prompt_informacoes_crime.
+
+novo_crime(TipoCrime, Vitima, DiaSemana, Local) :-
+  adiciona_fato(crime(TipoCrime, Vitima, DiaSemana, Local)).
 
 interface :-
   % Auxiliares
@@ -50,6 +91,11 @@ interface :-
   send(ReportsDialogGroup,append(AddLocalButton, next_row)),
   send(ReportsDialogGroup,append(AddEnvyButton, next_row)),
 
+  % Informacoes do crime
+  new(CrimeDialogGroup, dialog_group('Crime', box)),
+  send(RightDialogGroup, append, CrimeDialogGroup),
+  informacoes_crime_dialog(CrimeDialogGroup),
+
   % dialog group de Resultados
   new(ResultsDialogGroup, dialog_group('Principais Suspeitos', box)),
   send(RightDialogGroup, append, ResultsDialogGroup),
@@ -69,7 +115,28 @@ interface :-
 
   send(MainDialog, open).
 
-teste3(ARRAY):- writeln('Teste').
+informacoes_crime_dialog(DialogGroup) :-
+  crime(Tipo, Vitima, Dia, Lugar),
+
+  send(DialogGroup, append, new(TipoTxt, text_item(crime, Tipo))),
+  send(TipoTxt,  editable, false),
+  get(TipoTxt, area, AreaTipoTxt),
+  send(AreaTipoTxt, size, size(125, 20)),
+
+  send(DialogGroup, append, new(VitimaTxt, text_item(vitima, Vitima))),
+  send(VitimaTxt,  editable, false),
+  get(VitimaTxt, area, AreaVitimaTxt),
+  send(AreaVitimaTxt, size, size(125, 20)),
+
+  send(DialogGroup, append, new(DiaTxt, text_item(dia, Dia))),
+  send(DiaTxt,  editable, false),
+  get(DiaTxt, area, AreaDiaTxt),
+  send(AreaDiaTxt, size, size(125, 20)),
+
+  send(DialogGroup, append, new(LugarTxt, text_item('Lugar', Lugar))),
+  send(LugarTxt,  editable, false),
+  get(LugarTxt, area, AreaLugarTxt),
+  send(AreaLugarTxt, size, size(125, 20)).
 
 atualiza_resultado_suspeitos_menu(MainDialog) :-
   get(MainDialog,  member, right_dialog_group, RightDialogGroup),
@@ -115,35 +182,36 @@ adiciona_suspeito_form(Name) :-
 local_form(MainDialog) :-
   new(FormDialog, dialog('Local', size(800, 800))),
 
-  send(FormDialog, append, new(SuspeitoMenu, menu('Pessoa:', cycle))),
+  send(FormDialog, append, text('Foi visto no Local')),
+
+  send(FormDialog, append, new(SuspeitoMenu, menu('Suspeito:', cycle))),
   suspeitos_menu(SuspeitoMenu),
 
-  send(FormDialog, append, new(DiaMenu, menu('Dia:'))),
-  send(DiaMenu, append, menu_item('segunda')),
-  send(DiaMenu, append, menu_item('terca')),
-  send(DiaMenu, append, menu_item('quarta')),
-  send(DiaMenu, append, menu_item('quinta')),
-  send(DiaMenu, append, menu_item('sexta')),
-  send(DiaMenu, append, menu_item('sabado')),
-  send(DiaMenu, append, menu_item('domingo')),
+  send(FormDialog, append, new(DiaMenu, menu('Dia:', cycle))),
+  dias_semana_menu(DiaMenu),
 
-  send(FormDialog, append, new(LugarText, text_item('Lugar:'))),
+  send(FormDialog, append, new(LugarMenu, menu('Lugar:', cycle))),
+  locais_menu(LugarMenu),
 
   send(FormDialog, append, button(ok,
-    and(message(@prolog,  add_local, MainDialog, SuspeitoMenu?selection, DiaMenu?selection, LugarText?selection),
+    and(message(@prolog,  add_local, MainDialog, SuspeitoMenu?selection, DiaMenu?selection, LugarMenu?selection),
         message(FormDialog, destroy)))),
   send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
 
   send(FormDialog, open).
 
 envy_form(MainDialog) :-
-  new(FormDialog, dialog('Local', size(800, 800))),
+  crime(_, Vitima, _, _),
 
-  send(FormDialog, append, new(SuspeitoMenu, menu('Pessoa:', cycle))),
+  new(FormDialog, dialog('Local', size(800, 800))),
+  string_concat('Tem inveja do(a) ', Vitima, Titulo),
+  send(FormDialog, append, text(Titulo)),
+
+  send(FormDialog, append, new(SuspeitoMenu, menu('Suspeito:', cycle))),
   suspeitos_menu(SuspeitoMenu),
 
   send(FormDialog, append, button(ok,
-    and(message(@prolog,  add_envy, MainDialog, SuspeitoMenu?selection, SuspeitoMenu?selection),
+    and(message(@prolog,  add_envy, MainDialog, SuspeitoMenu?selection, Vitima),
         message(FormDialog, destroy)))),
   send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
 
@@ -154,13 +222,28 @@ suspeitos_menu(SuspeitoMenu) :-
   send(SuspeitoMenu, append, menu_item(Pessoa)), fail.
 suspeitos_menu(_).
 
+tipos_crimes_menu(CrimeMenu) :-
+  tipo_crime(Crime),
+  send(CrimeMenu, append, menu_item(Crime)), fail.
+tipos_crimes_menu(_).
+
+dias_semana_menu(DiaMenu) :-
+  dia(Dia),
+  send(DiaMenu, append, menu_item(Dia)), fail.
+dias_semana_menu(_).
+
+locais_menu(LocalMenu) :-
+  local(Local),
+  send(LocalMenu, append, menu_item(Local)), fail.
+locais_menu(_).
+
 add_local(MainDialog, Pessoa, Dia, Lugar) :-
   adiciona_fato(estava(Pessoa, Dia, Lugar)),
   gera_fatos_sobre_suspeitos(_),
   atualiza_resultado_suspeitos_menu(MainDialog).
 
 add_envy(MainDialog, Suspeito, Vitima) :-
-  adiciona_fato(inveja(Suspeito, john)),
+  adiciona_fato(inveja(Suspeito, Vitima)),
   gera_fatos_sobre_suspeitos(_),
   atualiza_resultado_suspeitos_menu(MainDialog).
 
