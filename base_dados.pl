@@ -34,16 +34,16 @@ frequenta(mary, parque).
 frequenta(jane, bar).
 frequenta(fred, bar).
 
-esquece(X):-
-    esquece1(X), fail.
-  esquece(X).
+remove_fato(X):-
+    remove_fato1(X), fail.
+  remove_fato(X).
   
-esquece1(X):-
+remove_fato1(X):-
     retract(X).
-esquece1(X).
+remove_fato1(X).
   
-memoriza(X):-
-    esquece(X), assert(X).
+adiciona_fato(X):-
+    remove_fato(X), assert(X).
   
-memoriza(X):-
+adiciona_fato(X):-
     assert(X).

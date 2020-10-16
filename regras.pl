@@ -43,3 +43,4 @@ nome_local(banco).
 nome_local(restaurante).
 nome_local(academia).
 nome_local(bibilioteca).
+nome_local(aeroporto).
