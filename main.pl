@@ -85,15 +85,23 @@ interface :-
   % Elementos no dialog group de relatos
   new(ReportsDialogGroup, dialog_group('Relatos', box)),
   send(RightDialogGroup, append, ReportsDialogGroup),
+
   new(AddLocalButton, button('Local', message(@prolog, local_form, MainDialog))),
   get(AddLocalButton, area, AreaAddLocalButton),
   send(AreaAddLocalButton, size, size(125, 20)),
 
-  new(AddMotivacaoButton, button('Possível Motivação', message(@prolog, motivacao_form, MainDialog))),
+  new(AddRelacionamentoButton,
+    button('Relacionamento', message(@prolog, relacionamento_form, MainDialog))),
+  get(AddRelacionamentoButton, area, AreaAddRelacionamentoButton),
+  send(AreaAddRelacionamentoButton, size, size(125, 20)),
+
+  new(AddMotivacaoButton, button('Possível Motivação',
+    message(@prolog, motivacao_form, MainDialog))),
   get(AddMotivacaoButton, area, AreaAddMotivacaoButton),
   send(AreaAddMotivacaoButton, size, size(125, 20)),
   
   send(ReportsDialogGroup,append(AddLocalButton, next_row)),
+  send(ReportsDialogGroup, append(AddRelacionamentoButton, next_row)),
   send(ReportsDialogGroup,append(AddMotivacaoButton, next_row)),
 
   % dialog group de Resultados
@@ -143,12 +151,17 @@ atualiza_resultado_suspeitos_menu(MainDialog) :-
   get(RightDialogGroup, member, 'Principais Suspeitos', ResultsDialog),
   get(ResultsDialog, member, result_menu, ResultsMenu),
   send(ResultsMenu,  clear),
-  principal_suspeito(Pessoa, _),
-  new(SuspeitoText, text(Pessoa)),
-  get(SuspeitoText, area, AreaSuspeitoText),
-  send(AreaSuspeitoText, size, size(125, 20)),
-  send(ResultsMenu, append(SuspeitoText)), fail.
+  principal_suspeito(_, _, Pessoas),
+  append_lista_menu(ResultsMenu, Pessoas).
 atualiza_resultado_suspeitos_menu(_).
+
+append_lista_menu(Menu, [Head|SubList]) :-
+  new(ItemText, text(Head)),
+  get(ItemText, area, AreaItemText),
+  send(AreaItemText, size, size(125, 20)),
+  send(Menu, append(ItemText)),
+  append_lista_menu(Menu, SubList).
+
 
 visualiza_fatos(DirObj, Frame) :-
   new(SuspeitosBrowser, browser('Fatos sobre o Suspeito', size(100, 40))),
@@ -181,20 +194,51 @@ adiciona_suspeito_form(Name) :-
 
 local_form(MainDialog) :-
   new(FormDialog, dialog('Local', size(800, 800))),
-
   send(FormDialog, append, text('Foi visto no Local')),
 
   send(FormDialog, append, new(SuspeitoMenu, menu('Suspeito:', cycle))),
   suspeitos_menu(SuspeitoMenu),
+  
+  send(FormDialog, append, new(LugarMenu, menu('Lugar:', cycle))),
+  locais_menu(LugarMenu),
 
   send(FormDialog, append, new(DiaMenu, menu('Dia:', cycle))),
   dias_semana_menu(DiaMenu),
 
-  send(FormDialog, append, new(LugarMenu, menu('Lugar:', cycle))),
-  locais_menu(LugarMenu),
+  send(FormDialog, append, new(FrequenciaMenu, menu('Frequência:', cycle))),
+  frequencia_menu(FrequenciaMenu),
 
   send(FormDialog, append, button(ok,
-    and(message(@prolog,  add_local, MainDialog, SuspeitoMenu?selection, DiaMenu?selection, LugarMenu?selection),
+    and(message(@prolog,  add_local,
+          MainDialog,
+          SuspeitoMenu?selection,
+          LugarMenu?selection,
+          FrequenciaMenu?selection,
+          DiaMenu?selection),
+        message(FormDialog, destroy)))),
+  send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
+
+  send(FormDialog, open).
+
+relacionamento_form(MainDialog) :-
+  crime(_, Vitima, _, _),
+
+  new(FormDialog, dialog('Local', size(800, 800))),
+  string_concat('Relacionamento com ', Vitima, Titulo),
+  send(FormDialog, append, text(Titulo)),
+
+  send(FormDialog, append, new(SuspeitoMenu, menu('Suspeito:', cycle))),
+  suspeitos_menu(SuspeitoMenu),
+
+  send(FormDialog, append, new(RelacionamentoMenu, menu('Relacionamento', cycle))),
+  relacionamentos_menu(RelacionamentoMenu),
+
+  send(FormDialog, append, button(ok,
+    and(message(@prolog,  add_relacionamento,
+          MainDialog,
+          SuspeitoMenu?selection,
+          Vitima,
+          RelacionamentoMenu?selection),
         message(FormDialog, destroy)))),
   send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
 
@@ -214,7 +258,10 @@ motivacao_form(MainDialog) :-
   motivacoes_menu(MotivoMenu),
 
   send(FormDialog, append, button(ok,
-    and(message(@prolog,  add_motivacao, MainDialog, SuspeitoMenu?selection, Vitima, inveja),
+    and(message(@prolog,  add_motivacao,
+          MainDialog,
+          SuspeitoMenu?selection,
+          Vitima, MotivoMenu?selection),
         message(FormDialog, destroy)))),
   send(FormDialog, append, button(cancel, message(FormDialog, destroy))),
 
@@ -225,8 +272,13 @@ suspeitos_menu(SuspeitoMenu) :-
   send(SuspeitoMenu, append, menu_item(Pessoa)), fail.
 suspeitos_menu(_).
 
+relacionamentos_menu(RelacionamentoMenu) :-
+  relacionamento(Relacionamento),
+  send(RelacionamentoMenu, append, menu_item(Relacionamento)), fail.
+relacionamentos_menu(_).
+
 motivacoes_menu(MotivoMenu) :-
-  tem_motivo_contra(_, _, Motivo),
+  motivacao(Motivo),
   send(MotivoMenu, append, menu_item(Motivo)), fail.
 motivacoes_menu(_).
 
@@ -240,18 +292,28 @@ dias_semana_menu(DiaMenu) :-
   send(DiaMenu, append, menu_item(Dia)), fail.
 dias_semana_menu(_).
 
+frequencia_menu(FrequenciaMenu) :-
+  local_frequencia(Frequencia),
+  send(FrequenciaMenu, append, menu_item(Frequencia)), fail.
+frequencia_menu(_).
+
 locais_menu(LocalMenu) :-
   local(Local),
   send(LocalMenu, append, menu_item(Local)), fail.
 locais_menu(_).
 
-add_local(MainDialog, Pessoa, Dia, Lugar) :-
-  adiciona_fato(estava(Pessoa, Dia, Lugar)),
+add_local(MainDialog, Pessoa, Lugar, Frequencia, Dia) :-
+  adiciona_fato(esteve_local(Pessoa, Lugar, Frequencia, Dia)),
   gera_fatos_sobre_suspeitos(_),
   atualiza_resultado_suspeitos_menu(MainDialog).
 
-add_motivacao(MainDialog, Suspeito, Vitima, inveja) :-
-  adiciona_fato(inveja(Suspeito, Vitima)),
+add_relacionamento(MainDialog, Pessoa, Vitima, Relacionamento) :-
+  adiciona_fato(relacionamento_com(Pessoa, Vitima, Relacionamento)),
+  gera_fatos_sobre_suspeitos(_),
+  atualiza_resultado_suspeitos_menu(MainDialog).
+
+add_motivacao(MainDialog, Suspeito, Vitima, Motivo) :-
+  adiciona_fato(tem_motivo_contra(Suspeito, Vitima, Motivo)),
   gera_fatos_sobre_suspeitos(_),
   atualiza_resultado_suspeitos_menu(MainDialog).
 
@@ -273,20 +335,31 @@ gera_fatos_sobre_suspeitos(Pessoa) :-
   abre_arquivo_fatos_sobre_suspeitos(Pessoa, Diretorio, SaidaArquivo),
   crime(Crime,Vitima,Dia,_),
   transcricao_local_dia_crime(SaidaArquivo, Pessoa, Dia, Crime),
+  transcricao_relacionamento_com_vitima(SaidaArquivo, Pessoa, Vitima),
   transcricao_motivos_contra_vitima(SaidaArquivo, Pessoa, Vitima),
   close(SaidaArquivo), fail.
 gera_fatos_sobre_suspeitos(_).
 
 transcricao_motivos_contra_vitima(SaidaArquivo, Pessoa, Vitima) :-
-  inveja(Pessoa,Vitima),
-  format(SaidaArquivo, '~w tem inveja de ~w\n', [Pessoa, Vitima]), fail.
+  tem_motivo_contra(Pessoa,Vitima, Motivo),
+  format(SaidaArquivo,
+    '~w pode ter motivos contra ~w, devido a ~w\n',
+    [Pessoa, Vitima, Motivo]), fail.
 transcricao_motivos_contra_vitima(_,_,_).
 
-transcricao_local_dia_crime(SaidaArquivo, Pessoa, Dia, Crime) :-
-  estava(Pessoa,Dia,Lugar),
+transcricao_relacionamento_com_vitima(SaidaArquivo, Pessoa, Vitima) :-
+  relacionamento_com(Pessoa, Vitima, Relacionamento),
   format(SaidaArquivo,
-    '~w esteve em ~w no dia em que ocorreu o(a) ~w\n',
-    [Pessoa, Lugar, Crime]), fail.
+    'O relacionamento entre ~w (Suspeito) e ~w (Vitima) é de ~w\n',
+    [Pessoa, Vitima, Relacionamento]
+  ), fail.
+transcricao_relacionamento_com_vitima(_, _, _).
+
+transcricao_local_dia_crime(SaidaArquivo, Pessoa, Dia, Crime) :-
+  esteve_local(Pessoa,Lugar, Frequencia ,Dia),
+  format(SaidaArquivo,
+    '~w esteve em ~w no dia em que ocorreu o(a) ~w e ele ~w no local\n',
+    [Pessoa, Lugar, Crime, Frequencia]), fail.
 transcricao_local_dia_crime(_, _, _, _).
 
 abre_arquivo_fatos_sobre_suspeitos(Pessoa, Diretorio, Out) :-
